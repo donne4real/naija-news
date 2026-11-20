@@ -54,11 +54,15 @@ Click **"Past roundups →"** (top right) to browse every previous daily digest.
 - **"Why it matters"** is an AI-generated take; treat it as a starting point, not a verdict. Always follow the **"Read original"** link for the full story.
 - Exchange rates are indicative and may differ slightly from what your bank quotes.
 
-## 6. Getting the digest by email
+## 6. Getting the digest by RSS
+
+Subscribe in any feed reader to **https://naija-news.pages.dev/feed.xml**. Each daily roundup appears as a new item (one per day), linking to that day's full digest.
+
+## 7. Getting the digest by email
 
 Subscribe via the **"Subscribe to the daily email"** button on the home page. You'll receive one email per day (around 01:00 UTC). To unsubscribe, use the link at the bottom of any email.
 
-## 7. Feedback and corrections
+## 8. Feedback and corrections
 
 Found an error, a missing story, or a miscategorised item? The digest is generated automatically, so the best fix is to adjust the sources or ranking — see the [Owner's guide](owner-guide.md) or [Developer guide](developer-guide.md).
 EOF

@@ -116,7 +116,7 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... npx wrangler pages deploy pub
 
 - **Add secrets to GitHub** (if not done): `LLM_PROVIDER`, `ANTHROPIC_API_KEY`, `LLM_FALLBACK_PROVIDER`, `GEMINI_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `PAGES_PROJECT_NAME`, `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID`, `BEEHIIV_SUBSCRIBE_URL` (+ optional Resend + tuning vars).
 - **Custom domain:** Cloudflare dashboard → Pages → naija-news → Custom domains.
-- **RSS feed** for the digest (so readers can subscribe in feed readers) — not yet implemented.
+- **RSS feed** for the digest — implemented (`/feed.xml`, one item per daily roundup).
 - **Search** across archived digests — not yet implemented.
 - **Dark mode** toggle — not yet implemented.
 - Once a year, check dependency updates: `pip list --outdated`, update `requirements.txt`, test, push.

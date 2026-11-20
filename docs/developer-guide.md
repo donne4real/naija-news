@@ -105,6 +105,7 @@ naija-news/
   - Scans `out_dir/digests/` for existing `*.html` to build the archive list.
   - Writes `index.html` (latest), `digests/{date}.html`, `archive.html`, `digest.json`.
 - Templates use a Nigerian green/gold theme (`#008751`, `#FFC107`).
+- `feed.xml` is a daily-roundup archive feed: one `<item>` per archived digest (newest first), linking to that day's page.
 
 ## 7. Configuration (env vars)
 
