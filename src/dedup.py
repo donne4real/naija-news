@@ -1,3 +1,4 @@
+import os
 import re
 from datetime import datetime, timezone
 
@@ -17,7 +18,9 @@ def _sim(a, b):
     return inter / union if union else 0.0
 
 
-def dedup(items, threshold=0.45):
+def dedup(items, threshold=None):
+    if threshold is None:
+        threshold = float(os.getenv('DEDUP_THRESHOLD', '0.45'))
     stories = []
     for it in items:
         toks = _tokens(it["title"])

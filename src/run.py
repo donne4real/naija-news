@@ -42,7 +42,7 @@ def main():
     stories = [s for s in stories if s.get("link") not in seen]
     print(f"[run] filtered {before - len(stories)} already-published stories; {len(stories)} remain")
 
-    top = dedup.rank(stories, top_n=24)
+    top = dedup.rank(stories, top_n=int(os.getenv("TOP_N", "24")))
     # ensure tech sources represented
     tech_sources = {"TechCabal"}
     tech_candidates = [s for s in stories if tech_sources & set(s["sources"])]
@@ -62,19 +62,20 @@ def main():
 
     summarized = summarize.summarize(top)
 
-    # balance: up to 3 per category, cap 15
+    cap = int(os.getenv("DIGEST_SIZE", "15"))
     cats = ["Politics", "National", "Sports", "Business", "Technology", "Other"]
     balanced = []
     counts = {c: 0 for c in cats}
-    # first pass: take up to 3 from each category
+    per_cat = max(1, cap // len(cats))
+    # first pass: take up to per_cat from each category
     for cat in cats:
         for it in summarized:
-            if it.get("category", "National") == cat and counts[cat] < 3 and len(balanced) < 15:
+            if it.get("category", "National") == cat and counts[cat] < per_cat and len(balanced) < cap:
                 balanced.append(it)
                 counts[cat] += 1
     # second pass: fill remaining slots
     for it in summarized:
-        if it not in balanced and len(balanced) < 15:
+        if it not in balanced and len(balanced) < cap:
             balanced.append(it)
             c = it.get("category", "National")
             if c in counts:

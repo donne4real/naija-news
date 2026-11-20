@@ -33,6 +33,11 @@ jobs:
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
           RESEND_TO: ${{ secrets.RESEND_TO }}
           OUT_DIR: public
+          DEDUP_THRESHOLD: ${{ secrets.DEDUP_THRESHOLD }}
+          RANK_SOURCE_WEIGHT: ${{ secrets.RANK_SOURCE_WEIGHT }}
+          RANK_RECENCY_HOURS: ${{ secrets.RANK_RECENCY_HOURS }}
+          TOP_N: ${{ secrets.TOP_N }}
+          DIGEST_SIZE: ${{ secrets.DIGEST_SIZE }}
         run: python -m src.run
 
       - name: Commit daily digest to archive
