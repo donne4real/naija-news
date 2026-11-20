@@ -21,5 +21,5 @@ Optionally override `LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`. Provider-specifi
 ## Configure GitHub Actions secrets
 OPENAI_API_KEY, OPENAI_MODEL, RESEND_* (optional), CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, PAGES_PROJECT_NAME.
 
-## Edit sources
-`src/sites.py`
+## Documentation
+See `docs/`: [README](docs/README.md) · [User guide](docs/user-guide.md) · [Owner's guide](docs/owner-guide.md) · [Developer guide](docs/developer-guide.md).
