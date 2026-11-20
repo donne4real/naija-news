@@ -10,4 +10,7 @@ SOURCES = [
     {"name": "Leadership", "url": "https://leadership.ng/feed/"},
     {"name": "Tribune", "url": "https://tribuneonlineng.com/feed/"},
     {"name": "News Agency of Nigeria", "url": "https://nannews.ng/feed/"},
+    {"name": "TechCabal", "url": "https://techcabal.com/feed/"},
+    {"name": "Nairametrics", "url": "https://nairametrics.com/feed/"},
+    {"name": "Complete Sports", "url": "https://www.completesports.com/feed/"},
 ]

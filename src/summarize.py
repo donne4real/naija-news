@@ -2,6 +2,22 @@ import os
 import json
 import httpx
 
+CATEGORIES = ["Politics", "National", "Sports", "Business", "Technology", "Other"]
+
+
+def _norm_cat(c):
+    if not c:
+        return "National"
+    c = str(c).strip().title()
+    for cat in CATEGORIES:
+        if c == cat:
+            return cat
+    low = c.lower()
+    for cat in CATEGORIES:
+        if cat.lower() in low or low in cat.lower():
+            return cat
+    return "National"
+
 PROVIDERS = {
     "openai": ("https://api.openai.com/v1", "gpt-4o-mini"),
     "groq": ("https://api.groq.com/openai/v1", "llama-3.3-70b-versatile"),
@@ -86,6 +102,7 @@ def _fallback(stories):
             "published": s["published"].isoformat(),
             "summary": snippet or "No summary available.",
             "why": "",
+            "category": "National",
         })
     return out
 
@@ -104,8 +121,9 @@ def _call_llm(provider, base_url, model, api_key, stories):
     system = (
         "You are a Nigerian news editor. Given 5 news stories, write for each a concise "
         "2-3 sentence summary in clear English and a one-line 'why it matters'. "
+        "Also assign a category from: Politics, National, Sports, Business, Technology, Other. "
         "Return ONLY valid JSON: an object with key 'items' containing an array of objects "
-        "with keys: id, summary, why. No markdown."
+        "with keys: id, summary, why, category. No markdown."
     )
     user = json.dumps({"stories": payload_stories}, ensure_ascii=False)
 
@@ -150,6 +168,7 @@ def _call_llm(provider, base_url, model, api_key, stories):
             "published": s["published"].isoformat(),
             "summary": summary,
             "why": it.get("why", ""),
+            "category": _norm_cat(it.get("category")),
         })
     if not out:
         raise ValueError("no items returned")
