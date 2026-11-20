@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,12 +14,33 @@ OUT_DIR = os.getenv("OUT_DIR", "public")
 
 
 def main():
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out_path = os.path.join(base, OUT_DIR)
+    digest_file = os.path.join(out_path, "digests", f"{date_str}.html")
+
+    # skip if today's digest already exists (avoid overwriting / repeats)
+    if os.path.exists(digest_file) and not os.getenv("FORCE_RUN"):
+        print(f"[run] digest for {date_str} already exists; skipping. Set FORCE_RUN=1 to override.")
+        return
+
     print("[run] fetching feeds...")
     items = fetch.fetch_all(sites.SOURCES)
     print(f"[run] fetched {len(items)} raw items")
-
     stories = dedup.dedup(items)
     print(f"[run] {len(stories)} unique stories")
+
+    # filter out stories already published on previous days
+    seen_path = os.path.join(base, "published.json")
+    seen = set()
+    if os.path.exists(seen_path):
+        try:
+            seen = set(json.load(open(seen_path)))
+        except Exception:
+            seen = set()
+    before = len(stories)
+    stories = [s for s in stories if s.get("link") not in seen]
+    print(f"[run] filtered {before - len(stories)} already-published stories; {len(stories)} remain")
 
     top = dedup.rank(stories, top_n=24)
     # ensure tech sources represented
@@ -60,12 +82,18 @@ def main():
     summarized = balanced
     print(f"[run] balanced to {len(summarized)} items: { {c:counts[c] for c in cats} }")
 
+    # record published links
+    new_links = [it.get("link") for it in summarized if it.get("link")]
+    seen.update(new_links)
+    try:
+        json.dump(sorted(seen), open(seen_path, "w"), indent=2)
+        print(f"[run] recorded {len(new_links)} new links in published.json")
+    except Exception as e:
+        print(f"[run] could not save published.json: {e}")
+
     rates = fx.get_rates()
     print(f"[run] fx: {rates}")
 
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    out_path = os.path.join(base, OUT_DIR)
     render.render_all(summarized, date_str, out_path, fx=rates)
     print(f"[run] rendered to {out_path}")
 
