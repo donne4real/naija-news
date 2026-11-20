@@ -86,18 +86,27 @@ def render_all(items, date_str, out_dir, fx=None):
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as f:
         json.dump(search_items, f, ensure_ascii=False)
 
-    # RSS feed (latest digest)
+    # RSS feed: one item per daily digest (accumulated archive)
     rss_items = []
-    for it in items:
-        rss_items.append(f'''    <item>
-      <title>{_html.escape(it.get("title",""))}</title>
-      <link>{_html.escape(it.get("link",""))}</link>
-      <guid isPermaLink="false">{_html.escape(it.get("link","") or it.get("title",""))}</guid>
-      <description>{_html.escape(it.get("summary",""))}</description>
-      <category>{_html.escape(it.get("category",""))}</category>
-      <pubDate>{it.get("published","")}</pubDate>
-    </item>''')
-    rss = f'''<?xml version="1.0" encoding="UTF-8"?>
+    for d in digests:
+        desc_parts = []
+        jpath = os.path.join(out_dir, "digests", f"{d}.json")
+        if os.path.exists(jpath):
+            try:
+                dd = json.load(open(jpath, encoding="utf-8"))
+                for it in dd.get("items", [])[:5]:
+                    desc_parts.append(f"- {it.get('title','')}")
+            except Exception:
+                pass
+        description = _html.escape("\n".join(desc_parts)) if desc_parts else f"Daily roundup for {d}"
+        rss_items.append(f"""    <item>
+      <title>Naija News Digest — {d}</title>
+      <link>https://naija-news.pages.dev/digests/{d}.html</link>
+      <guid isPermaLink="true">https://naija-news.pages.dev/digests/{d}.html</guid>
+      <description>{description}</description>
+      <pubDate>{d}T01:00:00Z</pubDate>
+    </item>""")
+    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>Naija News Digest</title>
@@ -107,9 +116,10 @@ def render_all(items, date_str, out_dir, fx=None):
     <lastBuildDate>{datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")}</lastBuildDate>
 {chr(10).join(rss_items)}
   </channel>
-</rss>'''
+</rss>"""
     with open(os.path.join(out_dir, "feed.xml"), "w", encoding="utf-8") as f:
         f.write(rss)
+
 
     # search page
     search_tpl = env.get_template("search.html")
