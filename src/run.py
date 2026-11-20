@@ -69,7 +69,7 @@ def main():
     render.render_all(summarized, date_str, out_path, fx=rates)
     print(f"[run] rendered to {out_path}")
 
-    publish.publish_all(summarized, date_str)
+    publish.publish_all(summarized, date_str, fx=rates)
     print("[run] done")
 
 
