@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naija News Digest — Search</title>
+<meta name="description" content="Search past Naija News Digest stories.">
+<style>
+body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f5f7fa;color:#222}
+.wrap{max-width:800px;margin:0 auto;padding:24px 20px}
+h1{color:#008751;margin-bottom:4px}
+input{width:100%;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+.card{background:#fff;border-radius:10px;padding:16px;margin:12px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card h3{margin:0 0 6px;font-size:16px;color:#008751}
+.sources{font-size:12px;color:#888;margin-bottom:8px}
+.summary{line-height:1.6}
+a{color:#008751}
+.footer{font-size:12px;color:#888;margin-top:24px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🇳🇬 Search Digests</h1>
+  <p><input id="q" type="search" placeholder="Search stories, categories, sources..." autofocus /></p>
+  <div id="results"></div>
+  <p><a href="index.html">← Latest</a> · <a href="archive.html">Archive</a></p>
+  <div class="footer">Generated {{ generated_at }}.</div>
+</div>
+<script>
+let INDEX=[];
+fetch('search-index.json').then(r=>r.json()).then(d=>{INDEX=d;render('');}).catch(()=>{document.getElementById('results').textContent='No search index.';});
+const q=document.getElementById('q');
+q.addEventListener('input',()=>render(q.value.trim().toLowerCase()));
+function render(term){
+  const res=document.getElementById('results');
+  const matches=INDEX.filter(it=>{
+    if(!term) return false;
+    return (it.title+' '+it.summary+' '+it.category+' '+(it.sources||[]).join(' ')).toLowerCase().includes(term);
+  }).slice(0,50);
+  if(!term){res.innerHTML='<p style="color:#888">Type to search past stories.</p>';return;}
+  if(!matches.length){res.innerHTML='<p style="color:#888">No matches.</p>';return;}
+  res.innerHTML=matches.map(it=>`
+    <div class="card">
+      <h3>${it.title}</h3>
+      <div class="sources">${(it.sources||[]).join(', ')} · ${it.date} · ${it.category}</div>
+      <div class="summary">${it.summary}</div>
+      ${it.url?`<p><a href="${it.url}" target="_blank" rel="noopener">Read original →</a></p>`:''}
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
+EOF
+echo created

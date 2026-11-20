@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Naija News Digest — {{ date }}</title>
+<meta name="description" content="Daily roundup of top Nigerian news: politics, national, sports, business, technology. Ad-free summaries with exchange rates." />
+<meta property="og:title" content="Naija News Digest — {{ date }}" />
+<meta property="og:description" content="Daily roundup of top Nigerian news stories, summarized." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://naija-news.pages.dev/digests/{{ date }}.html" />
+<link rel="alternate" type="application/rss+xml" title="Naija News Digest RSS" href="feed.xml" />
 <style>
 body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f5f7fa;color:#222}
 .wrap{max-width:800px;margin:0 auto;padding:24px 20px}
@@ -26,6 +32,7 @@ a{color:#008751}
 <body>
 <div class="wrap">
   <h1>🇳🇬 Naija News Digest</h1>
+  <div class="sub"><a href="search.html">Search</a> · <a href="archive.html">Past roundups</a></div>
   <div class="sub"><a href="archive.html">Past roundups →</a></div>
   <div class="sub">{{ date }} · Top stories by category</div>
 

@@ -1,5 +1,6 @@
 import os
 import json
+import html as _html
 from datetime import datetime, timezone
 from jinja2 import Environment, FileSystemLoader
 
@@ -58,4 +59,59 @@ def render_all(items, date_str, out_dir, fx=None):
     with open(os.path.join(out_dir, "digest.json"), "w", encoding="utf-8") as f:
         json.dump({"date": date_str, "fx": fx or {}, "items": items}, f, ensure_ascii=False, indent=2)
 
-    return digest_path
+    # per-day json (for archive/search)
+    with open(os.path.join(out_dir, "digests", f"{date_str}.json"), "w", encoding="utf-8") as f:
+        json.dump({"date": date_str, "fx": fx or {}, "items": items}, f, ensure_ascii=False, indent=2)
+
+    # build search index from all per-day json files
+    search_items = []
+    ddir = os.path.join(out_dir, "digests")
+    if os.path.isdir(ddir):
+        for fn in sorted(os.listdir(ddir)):
+            if not fn.endswith(".json"):
+                continue
+            try:
+                dd = json.load(open(os.path.join(ddir, fn), encoding="utf-8"))
+            except Exception:
+                continue
+            for it in dd.get("items", []):
+                search_items.append({
+                    "date": dd.get("date", fn.replace(".json","")),
+                    "title": it.get("title",""),
+                    "summary": it.get("summary",""),
+                    "category": it.get("category",""),
+                    "sources": it.get("sources",[]),
+                    "url": it.get("link",""),
+                })
+    with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as f:
+        json.dump(search_items, f, ensure_ascii=False)
+
+    # RSS feed (latest digest)
+    rss_items = []
+    for it in items:
+        rss_items.append(f'''    <item>
+      <title>{_html.escape(it.get("title",""))}</title>
+      <link>{_html.escape(it.get("link",""))}</link>
+      <guid isPermaLink="false">{_html.escape(it.get("link","") or it.get("title",""))}</guid>
+      <description>{_html.escape(it.get("summary",""))}</description>
+      <category>{_html.escape(it.get("category",""))}</category>
+      <pubDate>{it.get("published","")}</pubDate>
+    </item>''')
+    rss = f'''<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Naija News Digest</title>
+    <link>https://naija-news.pages.dev/</link>
+    <description>Daily roundup of top Nigerian news stories</description>
+    <language>en</language>
+    <lastBuildDate>{datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")}</lastBuildDate>
+{chr(10).join(rss_items)}
+  </channel>
+</rss>'''
+    with open(os.path.join(out_dir, "feed.xml"), "w", encoding="utf-8") as f:
+        f.write(rss)
+
+    # search page
+    search_tpl = env.get_template("search.html")
+    with open(os.path.join(out_dir, "search.html"), "w", encoding="utf-8") as f:
+        f.write(search_tpl.render(generated_at=ctx["generated_at"]))
