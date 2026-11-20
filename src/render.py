@@ -36,6 +36,7 @@ def render_all(items, date_str, out_dir, fx=None):
         "grouped": grouped,
         "categories": [c for c in cats if grouped[c]],
         "fx": fx or {},
+        "subscribe_url": os.getenv("BEEHIIV_SUBSCRIBE_URL", ""),
         "date": date_str,
         "digests": digests,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -47,7 +48,7 @@ def render_all(items, date_str, out_dir, fx=None):
         f.write(html)
 
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
-        f.write(index_tpl.render(latest_date=date_str, items=items, grouped=grouped, categories=[c for c in cats if grouped[c]], fx=fx or {}, digests=digests, generated_at=ctx["generated_at"]))
+        f.write(index_tpl.render(latest_date=date_str, items=items, grouped=grouped, categories=[c for c in cats if grouped[c]], fx=fx or {}, digests=digests, subscribe_url=os.getenv("BEEHIIV_SUBSCRIBE_URL",""), generated_at=ctx["generated_at"]))
 
     # archive page
     archive_tpl = env.get_template("archive.html")

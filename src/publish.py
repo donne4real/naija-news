@@ -49,6 +49,33 @@ def _build_html(items, date_str, fx):
     return "\n".join(parts)
 
 
+def send_beehiiv(items, date_str, fx=None):
+    api_key = os.getenv("BEEHIIV_API_KEY")
+    pub_id = os.getenv("BEEHIIV_PUBLICATION_ID")
+    if not api_key or not pub_id:
+        return False
+    html = _build_html(items, date_str, fx)
+    url = f"https://api.beehiiv.com/v2/publications/{pub_id}/posts"
+    payload = {
+        "title": f"Naija News Digest — {date_str}",
+        "subtitle": "Top stories by category",
+        "content": {"free": {"web": html, "email": html}},
+        "status": "confirmed",
+    }
+    try:
+        r = httpx.post(url, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json=payload, timeout=60)
+        r.raise_for_status()
+        print("[publish] beehiiv post created")
+        return True
+    except Exception as e:
+        print(f"[publish] beehiiv failed: {e}")
+        try:
+            print(r.text[:300])
+        except Exception:
+            pass
+        return False
+
+
 def send_resend(items, date_str, fx=None):
     api_key = os.getenv("RESEND_API_KEY")
     if not api_key:
@@ -75,4 +102,8 @@ def send_resend(items, date_str, fx=None):
 
 
 def publish_all(items, date_str, fx=None):
-    send_resend(items, date_str, fx=fx)
+    if send_beehiiv(items, date_str, fx=fx):
+        return
+    if send_resend(items, date_str, fx=fx):
+        return
+    print("[publish] no email provider configured")

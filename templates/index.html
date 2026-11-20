@@ -52,6 +52,12 @@ a{color:#008751}
   </div>
   {% endfor %}
 
+  {% if subscribe_url %}
+  <div class="fx" style="justify-content:center">
+    <span>📬 <a href="{{ subscribe_url }}" target="_blank" rel="noopener"><b>Subscribe to the daily email</b></a></span>
+  </div>
+  {% endif %}
+
   <div class="footer">Generated {{ generated_at }}.</div>
 </div>
 </body>
