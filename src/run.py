@@ -66,7 +66,7 @@ def main():
     cats = ["Politics", "National", "Sports", "Business", "Technology", "Other"]
     balanced = []
     counts = {c: 0 for c in cats}
-    per_cat = max(1, cap // len(cats))
+    per_cat = int(os.getenv('MAX_PER_CATEGORY', str(max(1, cap // len(cats)))))
     # first pass: take up to per_cat from each category
     for cat in cats:
         for it in summarized:
