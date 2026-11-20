@@ -25,12 +25,19 @@ def render_all(items, date_str, out_dir, fx=None):
             cat = "National"
         grouped[cat].append(it)
 
+    # scan existing digests for archive
+    digests_dir = os.path.join(out_dir, "digests")
+    digests = []
+    if os.path.isdir(digests_dir):
+        digests = sorted([f.replace(".html","") for f in os.listdir(digests_dir) if f.endswith(".html")], reverse=True)
+
     ctx = {
         "items": items,
         "grouped": grouped,
         "categories": [c for c in cats if grouped[c]],
         "fx": fx or {},
         "date": date_str,
+        "digests": digests,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
     }
     html = digest_tpl.render(**ctx)
@@ -40,7 +47,12 @@ def render_all(items, date_str, out_dir, fx=None):
         f.write(html)
 
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
-        f.write(index_tpl.render(latest_date=date_str, items=items, grouped=grouped, categories=[c for c in cats if grouped[c]], fx=fx or {}, generated_at=ctx["generated_at"]))
+        f.write(index_tpl.render(latest_date=date_str, items=items, grouped=grouped, categories=[c for c in cats if grouped[c]], fx=fx or {}, digests=digests, generated_at=ctx["generated_at"]))
+
+    # archive page
+    archive_tpl = env.get_template("archive.html")
+    with open(os.path.join(out_dir, "archive.html"), "w", encoding="utf-8") as f:
+        f.write(archive_tpl.render(digests=digests, generated_at=ctx["generated_at"]))
 
     with open(os.path.join(out_dir, "digest.json"), "w", encoding="utf-8") as f:
         json.dump({"date": date_str, "fx": fx or {}, "items": items}, f, ensure_ascii=False, indent=2)
