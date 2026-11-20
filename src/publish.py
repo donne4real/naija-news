@@ -59,7 +59,7 @@ def send_beehiiv(items, date_str, fx=None):
     payload = {
         "title": f"Naija News Digest — {date_str}",
         "subtitle": "Top stories by category",
-        "content": {"free": {"web": html, "email": html}},
+        "body_content": html,
         "status": "confirmed",
     }
     try:
