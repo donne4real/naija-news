@@ -10,7 +10,7 @@ load_dotenv()
 
 from src import sites, fetch, dedup, enrich, summarize, render, publish, fx
 
-OUT_DIR = os.getenv("OUT_DIR", "public")
+OUT_DIR = os.getenv("OUT_DIR") or "public"
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     stories = [s for s in stories if s.get("link") not in seen]
     print(f"[run] filtered {before - len(stories)} already-published stories; {len(stories)} remain")
 
-    top = dedup.rank(stories, top_n=int(os.getenv("TOP_N", "24")))
+    top = dedup.rank(stories, top_n=int(os.getenv("TOP_N") or "24"))
     # ensure tech sources represented
     tech_sources = {"TechCabal"}
     tech_candidates = [s for s in stories if tech_sources & set(s["sources"])]
@@ -62,11 +62,11 @@ def main():
 
     summarized = summarize.summarize(top)
 
-    cap = int(os.getenv("DIGEST_SIZE", "15"))
+    cap = int(os.getenv("DIGEST_SIZE") or "15")
     cats = ["Politics", "National", "Sports", "Business", "Technology", "Other"]
     balanced = []
     counts = {c: 0 for c in cats}
-    per_cat = int(os.getenv('MAX_PER_CATEGORY', str(max(1, cap // len(cats)))))
+    per_cat = int(os.getenv('MAX_PER_CATEGORY') or str(max(1, cap // len(cats))))
     # first pass: take up to per_cat from each category
     for cat in cats:
         for it in summarized:
