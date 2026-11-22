@@ -100,11 +100,24 @@ def _fallback(stories):
             "sources": s["sources"],
             "link": s["link"],
             "published": s["published"].isoformat(),
-            "summary": snippet or "No summary available.",
+            "summary": _clean_summary(snippet) or "No summary available.",
             "why": "",
             "category": "National",
         })
     return out
+
+
+
+def _needs_retry(summary):
+    if not summary:
+        return True
+    s = str(summary).strip()
+    if len(s) < 60:
+        return True
+    low = s.lower()
+    if "read more" in low or "continue reading" in low:
+        return True
+    return False
 
 
 def _call_llm(provider, base_url, model, api_key, stories):
@@ -138,6 +151,7 @@ def _call_llm(provider, base_url, model, api_key, stories):
             {"role": "user", "content": user},
         ],
         "temperature": 0.3,
+        "max_tokens": 2000,
     }
     if provider in JSON_MODE_PROVIDERS:
         body["response_format"] = {"type": "json_object"}
@@ -175,27 +189,72 @@ def _call_llm(provider, base_url, model, api_key, stories):
     return out
 
 
+def _clean_summary(s):
+    s = str(s or "").strip()
+    for t in ("Read More", "Read more", "Continue reading"):
+        s = s.replace(t, "").strip()
+    s = " ".join(s.split())
+    return s
+
+
 def summarize(stories):
-    # try primary
     provider, base_url, model, api_key = _resolve()
-    if not api_key:
-        print(f"[summarize] no API key for primary '{provider}'; trying fallback")
-    else:
+    fb = _fallback_resolve()
+
+    result = None
+    used_provider = None
+    # try primary
+    if api_key:
         try:
             print(f"[summarize] using primary {provider} / {model}")
-            return _call_llm(provider, base_url, model, api_key, stories)
+            result = _call_llm(provider, base_url, model, api_key, stories)
+            used_provider = (provider, base_url, model, api_key)
         except Exception as e:
             print(f"[summarize] primary failed ({provider}): {e}")
 
-    # try fallback provider
-    fb = _fallback_resolve()
-    if fb:
+    # fallback provider
+    if result is None and fb:
         f_provider, f_url, f_model, f_key = fb
         try:
             print(f"[summarize] using fallback {f_provider} / {f_model}")
-            return _call_llm(f_provider, f_url, f_model, f_key, stories)
+            result = _call_llm(f_provider, f_url, f_model, f_key, stories)
+            used_provider = (f_provider, f_url, f_model, f_key)
         except Exception as e:
             print(f"[summarize] fallback failed ({f_provider}): {e}")
 
-    print("[summarize] all providers failed; using RSS snippets")
-    return _fallback(stories)
+    if result is None:
+        print("[summarize] all providers failed; using RSS snippets")
+        out = _fallback(stories)
+        for it in out:
+            it["summary"] = _clean_summary(it["summary"])
+        return out
+
+    # retry items with weak/missing summaries
+    bad_idx = [i for i, it in enumerate(result) if _needs_retry(it.get("summary", ""))]
+    if bad_idx:
+        bad_stories = [stories[i] for i in bad_idx]
+        retry_res = None
+        if used_provider:
+            p, u, m, k = used_provider
+            try:
+                print(f"[summarize] retrying {len(bad_idx)} weak items with {p}")
+                retry_res = _call_llm(p, u, m, k, bad_stories)
+            except Exception as e:
+                print(f"[summarize] retry failed: {e}")
+        if retry_res:
+            for j, i in enumerate(bad_idx):
+                if j < len(retry_res):
+                    r = retry_res[j]
+                    ns = _clean_summary(r.get("summary", ""))
+                    if ns and not _needs_retry(ns):
+                        result[i]["summary"] = ns
+                        result[i]["why"] = r.get("why", result[i].get("why", ""))
+                        result[i]["category"] = r.get("category", result[i].get("category", "National"))
+
+    # final cleanup
+    for it in result:
+        it["summary"] = _clean_summary(it.get("summary", ""))
+        if _needs_retry(it["summary"]):
+            # last resort: cleaned snippet
+            pass
+    return result

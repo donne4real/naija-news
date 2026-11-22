@@ -22,6 +22,12 @@ def fetch_article_text(url, max_chars=4000):
     if node:
         text = node.get_text(" ", strip=True)
     if not text or len(text) < 200:
+        for attr in ("description", "og:description", "twitter:description"):
+            tag = soup.find("meta", attrs={"name": attr}) or soup.find("meta", attrs={"property": attr})
+            if tag and tag.get("content"):
+                text = tag["content"]
+                break
+    if not text or len(text) < 200:
         paras = [p.get_text(" ", strip=True) for p in soup.find_all("p")]
         text = " ".join(paras)
     text = re.sub(r"\s+", " ", text).strip()

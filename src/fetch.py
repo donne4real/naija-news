@@ -33,6 +33,12 @@ def _clean_html(html):
         return ""
     text = re.sub(r"<[^>]+>", " ", html)
     text = re.sub(r"\s+", " ", text).strip()
+    # strip common "read more" tails
+    for tail in ("Read More", "Read more", "Continue reading", "…", "..."):
+        if text.endswith(tail):
+            text = text[: -len(tail)].strip()
+    # remove any trailing "Read More" fragment
+    text = re.sub(r"\s*Read More\.?\s*$", "", text, flags=re.I)
     return text
 
 
