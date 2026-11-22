@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/digests public/archive.html
+          git add public/digests published.json
           if git diff --cached --quiet; then
             echo "No new digest to commit"
           else
