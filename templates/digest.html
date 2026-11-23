@@ -27,9 +27,20 @@ h1{color:#008751;margin-bottom:4px}
 .cat{display:inline-block;background:#008751;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px}
 a{color:#008751}
 .footer{font-size:12px;color:#888;margin-top:24px;text-align:center}
+
+/* dark mode */
+body.dark{background:#121212;color:#e6e6e6}
+body.dark .card{background:#1e1e1e;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .fx{background:#1e1e1e}
+body.dark .why{background:#1a2a1a}
+body.dark a{color:#4caf50}
+body.dark input{background:#1e1e1e;color:#e6e6e6;border-color:#444}
+#themeToggle{position:fixed;top:12px;right:12px;background:#008751;color:#fff;border:none;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;z-index:10}
 </style>
+  <meta property="og:image" content="https://placehold.co/1200x630/008751/ffffff/png?text=Naija+News+Digest" />
 </head>
 <body>
+<button id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
 <div class="wrap">
   <h1>🇳🇬 Naija News Digest</h1>
   <div class="sub"><a href="search.html">Search</a> · <a href="archive.html">Past roundups</a></div>
@@ -54,7 +65,13 @@ a{color:#008751}
       <div class="sources">{{ it.sources|join(', ') }}{% if it.published %} · {{ it.published[:10] }}{% endif %}</div>
       <div class="summary">{{ it.summary }}</div>
       {% if it.why %}<div class="why"><strong>Why it matters:</strong> {{ it.why }}</div>{% endif %}
-      <p><a href="{{ it.link }}" target="_blank" rel="noopener">Read original →</a></p>
+      <p>
+      <a href="{{ it.link }}" target="_blank" rel="noopener">Read original →</a>
+      &nbsp;·&nbsp;
+      <a href="https://wa.me/?text={{ (it.title ~ ' - ' ~ it.link)|urlencode }}" target="_blank" rel="noopener">WhatsApp</a>
+      &nbsp;·&nbsp;
+      <a href="https://twitter.com/intent/tweet?text={{ it.title|urlencode }}&url={{ it.link|urlencode }}" target="_blank" rel="noopener">X</a>
+    </p>
     </div>
     {% endfor %}
   </div>
@@ -62,5 +79,16 @@ a{color:#008751}
 
   <div class="footer">Generated {{ generated_at }}. Triage/guidance only — verify with sources.</div>
 </div>
+
+<script>
+function toggleTheme(){
+  const b=document.body;
+  b.classList.toggle('dark');
+  const dark=b.classList.contains('dark');
+  localStorage.setItem('theme', dark?'dark':'light');
+  document.getElementById('themeToggle').textContent = dark?'☀️ Light':'🌙 Dark';
+}
+(function(){ if(localStorage.getItem('theme')==='dark'){ document.body.classList.add('dark'); var t=document.getElementById('themeToggle'); if(t) t.textContent='☀️ Light'; } })();
+</script>
 </body>
 </html>

@@ -14,9 +14,15 @@ ul{list-style:none;padding:0}
 li{background:#fff;border-radius:8px;padding:12px 16px;margin:8px 0;box-shadow:0 2px 6px rgba(0,0,0,.06)}
 li a{font-weight:600;text-decoration:none}
 .footer{font-size:12px;color:#888;margin-top:24px;text-align:center}
+
+body.dark{background:#121212;color:#e6e6e6}
+body.dark .card{background:#1e1e1e;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+body.dark .fx{background:#1e1e1e}
+#themeToggle{position:fixed;top:12px;right:12px;background:#008751;color:#fff;border:none;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;z-index:10}
 </style>
 </head>
 <body>
+<button id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
 <div class="wrap">
   <h1>🇳🇬 Naija News Digest — Archive</h1>
   <div class="sub"><a href="search.html">Search</a> · <a href="archive.html">Past roundups</a></div>
@@ -29,5 +35,10 @@ li a{font-weight:600;text-decoration:none}
   <p><a href="index.html">← Latest</a></p>
   <div class="footer">Generated {{ generated_at }}.</div>
 </div>
+
+<script>
+function toggleTheme(){const b=document.body;b.classList.toggle('dark');const dark=b.classList.contains('dark');localStorage.setItem('theme',dark?'dark':'light');var t=document.getElementById('themeToggle');if(t)t.textContent=dark?'☀️ Light':'🌙 Dark';}
+(function(){if(localStorage.getItem('theme')==='dark'){document.body.classList.add('dark');var t=document.getElementById('themeToggle');if(t)t.textContent='☀️ Light';}})();
+</script>
 </body>
 </html>
