@@ -26,11 +26,13 @@ def render_all(items, date_str, out_dir, fx=None):
             cat = "National"
         grouped[cat].append(it)
 
-    # scan existing digests for archive
+    # scan existing digests for archive (always include today's digest)
     digests_dir = os.path.join(out_dir, "digests")
     digests = []
     if os.path.isdir(digests_dir):
         digests = sorted([f.replace(".html","") for f in os.listdir(digests_dir) if f.endswith(".html")], reverse=True)
+    if date_str not in digests:
+        digests = sorted(digests + [date_str], reverse=True)
 
     ctx = {
         "items": items,
